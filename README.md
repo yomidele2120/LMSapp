@@ -95,6 +95,31 @@ PDFs) · Vitest (unit tests) · Vercel
 > `npx tsc --noEmit` straight after and confirm it's still clean before
 > committing.
 
+> **`next` is also pinned exactly, and `package-lock.json` is committed —
+> both on purpose, learned the hard way.** A caret range on `next` once let
+> a fresh `npm install` on Vercel silently jump from 15.1.0 to 16.3.1 — a
+> major version this app was never built against, which broke middleware
+> (Next 16 deprecates the `middleware.ts` convention in favor of
+> `proxy.ts`) and took the entire site down with an opaque
+> `MIDDLEWARE_INVOCATION_FAILED`. Separately, `next@15.1.0` itself turned
+> out to have a disclosed critical RCE (CVE-2025-66478, CVSS 10.0) that
+> Vercel's deploy-time scanner refuses to ship. The Dec 2025 patch for the
+> 15.1.x line was `15.1.11`, but by the time this was fixed (Aug 2026)
+> Next.js had moved to a monthly security-release cadence and 15.1.x was
+> itself behind — so this is pinned to `15.5.23`, the current Maintenance
+> LTS patch in the 15.x line as of that date, not just "the first version
+> that unblocks the CVE scanner." `eslint-config-next` is pinned to match
+> (`15.5.23`) for the same reason — a mismatched lint config against the
+> actual Next.js version produces confusing false positives/negatives.
+> Bumping to a newer *minor* within 15.x for a security patch is fine and
+> expected; jumping the *major* version is not something `npm install`
+> should ever decide on its own. If a future Next.js CVE requires another
+> bump: check [nextjs.org/blog](https://nextjs.org/blog) for the current
+> patched version in the 15.x line specifically (not "latest," which may
+> mean 16.x or later by then), update both pins together, run the full
+> verification pass below, and commit the regenerated `package-lock.json`
+> alongside it.
+
 ## Verified
 
 - `npx tsc --noEmit` — passes with zero errors
