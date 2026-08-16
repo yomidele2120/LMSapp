@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  LegalOS Nigeria — "Chambers" design language
+  --------------------------------------------
+  Palette:  ink #12211D (chambers green)  ·  parchment #EFECE2 (cool paper)
+            brass #A9813F (accent, used sparingly — filing tabs, primary
+            actions, the docket-number treatment)  ·  seal #7A2E23 (urgent /
+            overdue only, never decorative)
+  Type:     Fraunces (display) — a literary serif with enough personality to
+            carry case titles and section headers without tipping into
+            generic "elegant SaaS" territory.
+            Inter (sans) — the neutral workhorse for UI chrome, tables, forms.
+            IBM Plex Mono (mono) — reserved for docket/case numbers, dates,
+            and money, so those values read distinctly from prose at a glance
+            (the way a real case file stamps its reference number).
+  Signature: case numbers are always set in mono with a thin brass rule
+            underneath — a small, consistent tell that this is a system of
+            record, not just a task app with a legal skin.
+*/
+
+:root {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-parchment-50 text-charcoal font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-medium tracking-tight text-ink-900;
+  }
+
+  ::selection {
+    @apply bg-brass-light/40;
+  }
+
+  /* Visible keyboard focus everywhere — never suppressed */
+  :focus-visible {
+    outline: 2px solid theme("colors.brass.DEFAULT");
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* The docket-number treatment referenced above */
+  .docket {
+    @apply font-mono text-xs tracking-wide text-ink-500 border-b border-brass/40 pb-0.5 inline-block;
+  }
+
+  .card-surface {
+    @apply bg-white border border-slate-line rounded-md shadow-card;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
