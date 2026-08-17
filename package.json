@@ -2,7 +2,7 @@
   "name": "legalos-nigeria",
   "version": "0.1.0",
   "private": true,
-  "description": "LegalOS Nigeria — AI-powered legal practice management platform for Nigerian law firms",
+  "description": "LegalOS Nigeria - AI-powered legal practice management platform for Nigerian law firms",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
