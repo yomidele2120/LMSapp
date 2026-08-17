@@ -640,7 +640,11 @@ alter table notifications enable row level security;
 alter table audit_logs enable row level security;
 alter table ai_requests enable row level security;
 
--- Firms: a user can only see their own firm; super_admin sees all
+-- Firms: a user can only see their own firm; super_admin sees all.
+-- The first workspace is created during signup before the user has a profile row,
+-- so we allow the initial insert to succeed and then lock access down afterwards.
+create policy firms_insert on firms for insert
+  with check (true);
 create policy firms_select on firms for select
   using (id = auth_firm_id() or auth_role() = 'super_admin');
 create policy firms_update on firms for update
