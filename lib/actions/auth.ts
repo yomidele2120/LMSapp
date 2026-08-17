@@ -56,7 +56,20 @@ export async function signupNewFirm(
     .single();
 
   if (firmError || !firm) {
-    return { error: "Couldn't set up the firm workspace. Try a different firm name." };
+    // The previous version of this message ("try a different firm name")
+    // was actively misleading — it presumes a naming collision when the
+    // real cause is almost always something else entirely (wrong Supabase
+    // project in the env vars, RLS/grants, or the schema not actually
+    // applied yet). Logging the real Postgres/PostgREST error server-side
+    // means it shows up in Vercel's Runtime Logs for this request instead
+    // of vanishing, which is the only way to actually diagnose signup
+    // failures that happen on someone else's deployment.
+    console.error("[signupNewFirm] firms insert failed:", firmError);
+    return {
+      error:
+        "Couldn't set up the firm workspace right now. If this keeps happening, " +
+        "check the server logs for the specific database error.",
+    };
   }
 
   const { error: signUpError } = await supabase.auth.signUp({
