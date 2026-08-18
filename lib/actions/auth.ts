@@ -49,22 +49,23 @@ export async function signupNewFirm(
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-  const { data: firm, error: firmError } = await supabase
-    .from("firms")
-    .insert({ name: firmName, slug: `${slug}-${Date.now().toString(36)}` })
-    .select("id")
-    .single();
+  const { data: firmId, error: firmError } = await supabase.rpc("create_firm_for_signup", {
+    p_name: firmName,
+    p_slug: `${slug}-${Date.now().toString(36)}`,
+  });
 
-  if (firmError || !firm) {
+  if (firmError || !firmId) {
     // The previous version of this message ("try a different firm name")
     // was actively misleading — it presumes a naming collision when the
-    // real cause is almost always something else entirely (wrong Supabase
-    // project in the env vars, RLS/grants, or the schema not actually
-    // applied yet). Logging the real Postgres/PostgREST error server-side
-    // means it shows up in Vercel's Runtime Logs for this request instead
-    // of vanishing, which is the only way to actually diagnose signup
-    // failures that happen on someone else's deployment.
-    console.error("[signupNewFirm] firms insert failed:", firmError);
+    // real cause is almost always something else entirely. This now goes
+    // through create_firm_for_signup(), a SECURITY DEFINER function (see
+    // complete_database.sql), specifically because a plain
+    // .insert().select() from an anonymous client fails RLS: Postgres
+    // checks the SELECT policy on RETURNING, not just the INSERT policy,
+    // and there's no logged-in user yet for firms_select to match against.
+    // Logging the real error server-side means it shows up in Vercel's
+    // Runtime Logs for this request instead of vanishing.
+    console.error("[signupNewFirm] create_firm_for_signup failed:", firmError);
     return {
       error:
         "Couldn't set up the firm workspace right now. If this keeps happening, " +
@@ -77,7 +78,7 @@ export async function signupNewFirm(
     password,
     options: {
       data: {
-        firm_id: firm.id,
+        firm_id: firmId,
         role: "managing_partner",
         full_name: fullName,
       },
